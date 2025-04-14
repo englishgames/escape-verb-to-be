@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escape do Verbo To Be</title>
+  <style>
+    body {
+      font-family: 'Trebuchet MS', sans-serif;
+      background-color: #111;
+      color: #eee;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #222;
+      border-radius: 20px;
+      box-shadow: 0 0 20px #0f0;
+    }
+    h1 {
+      color: #0f0;
+    }
+    .question {
+      margin: 20px 0;
+      font-size: 1.3em;
+    }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: none;
+      background-color: #333;
+      color: white;
+      transition: 0.3s;
+    }
+    .options button:hover {
+      background-color: #0f0;
+      color: black;
+    }
+    .feedback {
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    #start-btn {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      background-color: #0f0;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="game">
+    <h1>Escape do Verbo To Be</h1>
+    <div id="intro">
+      <p>Você acorda preso numa mansão mal-assombrada... A única forma de escapar é respondendo corretamente sobre o Verbo <strong>To Be</strong>.</p>
+      <button id="start-btn">Começar</button>
+    </div>
+
+    <div id="question-box" style="display:none;">
+      <div class="question" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div id="end-screen" style="display:none;">
+      <h2>Parabéns, você escapou!</h2>
+      <p>Sua pontuação: <span id="score"></span>/5</p>
+      <p>Prepare-se... novas perguntas virão na próxima versão.</p>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "She ___ a student.",
+        options: ["am", "are", "is"],
+        answer: "is"
+      },
+      {
+        question: "They ___ not teachers.",
+        options: ["is", "are", "am"],
+        answer: "are"
+      },
+      {
+        question: "___ he a doctor?",
+        options: ["Is", "Are", "Am"],
+        answer: "Is"
+      },
+      {
+        question: "I ___ tired.",
+        options: ["am", "are", "is"],
+        answer: "am"
+      },
+      {
+        question: "We ___ ready!",
+        options: ["am", "is", "are"],
+        answer: "are"
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const startBtn = document.getElementById("start-btn");
+    const questionBox = document.getElementById("question-box");
+    const intro = document.getElementById("intro");
+    const questionText = document.getElementById("question-text");
+    const optionsBox = document.getElementById("options");
+    const feedback = document.getElementById("feedback");
+    const endScreen = document.getElementById("end-screen");
+    const scoreDisplay = document.getElementById("score");
+
+    startBtn.addEventListener("click", () => {
+      intro.style.display = "none";
+      questionBox.style.display = "block";
+      showQuestion();
+    });
+
+    function showQuestion() {
+      feedback.textContent = "";
+      const q = questions[currentQuestion];
+      questionText.textContent = q.question;
+      optionsBox.innerHTML = "";
+      q.options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.textContent = option;
+        btn.onclick = () => checkAnswer(option);
+        optionsBox.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected) {
+      const correct = questions[currentQuestion].answer;
+      if (selected === correct) {
+        feedback.textContent = "Muito bem!";
+        feedback.style.color = "#0f0";
+        score++;
+      } else {
+        feedback.textContent = "O monstro se aproxima...";
+        feedback.style.color = "#f33";
+      }
+      currentQuestion++;
+      setTimeout(() => {
+        if (currentQuestion < questions.length) {
+          showQuestion();
+        } else {
+          showEndScreen();
+        }
+      }, 1000);
+    }
+
+    function showEndScreen() {
+      questionBox.style.display = "none";
+      endScreen.style.display = "block";
+      scoreDisplay.textContent = score;
+    }
+  </script>
+
+</body>
+</html>
