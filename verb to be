@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo Interativo - Verbo "To Be"</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #87CEEB;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+
+        .question-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .answer-buttons button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        .answer-buttons button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+    <div class="question-box">
+        <p id="questionText" class="question-text">Carregando pergunta...</p>
+        <div id="answerButtons" class="answer-buttons">
+            <!-- As opções de resposta serão geradas aqui -->
+        </div>
+        <p id="result" class="result"></p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 400;
+
+        let player = {
+            x: 50,
+            y: 300,
+            width: 30,
+            height: 30,
+            speed: 3,
+            dx: 0,
+            dy: 0,
+            jumping: false,
+            gravity: 0.8,
+            jumpStrength: -12
+        };
+
+        let ground = canvas.height - 20;
+        let currentQuestion = 0;
+        let score = 0;
+        let obstacles = [];
+        let questions = [
+            { question: "I ____ a teacher.", options: ["am", "is", "are"], answer: "am" },
+            { question: "She ____ not happy today.", options: ["is", "am", "are"], answer: "is" },
+            { question: "____ they your friends?", options: ["Are", "Is", "Am"], answer: "Are" },
+            { question: "We ____ at the park.", options: ["are", "is", "am"], answer: "are" },
+            { question: "My parents ____ not here.", options: ["are", "is", "am"], answer: "are" },
+            { question: "He ____ a great player.", options: ["is", "are", "am"], answer: "is" },
+            { question: "You ____ always welcome.", options: ["are", "is", "am"], answer: "are" },
+            { question: "They ____ friends of mine.", options: ["are", "is", "am"], answer: "are" },
+            { question: "It ____ cold outside.", options: ["is", "am", "are"], answer: "is" },
+            { question: "We ____ not tired.", options: ["are", "is", "am"], answer: "are" },
+            // Continue até 30 perguntas...
+        ];
+
+        // Função para desenhar o jogador
+        function drawPlayer() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // Função para movimentação do jogador
+        function movePlayer() {
+            player.x += player.dx;
+            player.y += player.dy;
+
+            if (player.y + player.height < ground) {
+                player.dy += player.gravity; // Efeito de gravidade
+            } else {
+                player.y = ground - player.height;
+                player.jumping = false;
+            }
+
+            if (player.x > canvas.width) player.x = -player.width; // Loop pela tela
+        }
+
+        // Função para desenhar o chão
+        function drawGround() {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, ground, canvas.width, 20);
+        }
+
+        // Função de pulo
+        function jump() {
+            if (!player.jumping) {
+                player.dy = player.jumpStrength;
+                player.jumping = true;
+            }
+        }
+
+        // Função para carregar a próxima pergunta
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById("questionText").textContent = q.question;
+            const answerButtons = document.getElementById("answerButtons");
+            answerButtons.innerHTML = '';
+            q.options.forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option);
+                answerButtons.appendChild(button);
+            });
+        }
+
+        // Função para verificar a resposta do jogador
+        function checkAnswer(answer) {
+            const q = questions[currentQuestion];
+            if (answer === q.answer) {
+                document.getElementById("result").textContent = "Resposta correta! Avance para o próximo desafio.";
+                score++;
+                if (score === 6) {
+                    currentQuestion++;
+                    score = 0; // Resetar o placar para a próxima fase
+                    if (currentQuestion >= questions.length) {
+                        alert("Você completou o jogo! Parabéns!");
+                        location.reload(); // Reinicia o jogo após completar
+                    } else {
+                        loadQuestion();
+                    }
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                document.getElementById("result").textContent = "Resposta incorreta, tente novamente.";
+            }
+        }
+
+        // Função para atualizar o jogo a cada frame
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            movePlayer();
+            drawGround();
+            drawPlayer();
+            requestAnimationFrame(updateGame);
+        }
+
+        // Funções para mover o jogador
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight') player.dx = player.speed;
+            if (e.key === 'ArrowLeft') player.dx = -player.speed;
+            if (e.key === ' ' || e.key === 'ArrowUp') jump();
+        });
+
+        window.addEventListener('keyup', function (e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') player.dx = 0;
+        });
+
+        // Iniciar o jogo
+        loadQuestion();
+        updateGame();
+    </script>
+
+</body>
+</html>
